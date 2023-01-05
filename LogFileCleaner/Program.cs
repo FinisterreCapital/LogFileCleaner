@@ -11,9 +11,9 @@ namespace LogFileCleaner
 {
     internal class Program
     {
-
         static void Main(string[] args)
         {
+
             //Declare Variables and Set Values
             string FileDirectory;
             String ArchiveDirectory;
@@ -28,7 +28,7 @@ namespace LogFileCleaner
 
             var DeleteCutOffTime = GetCutOffTime(DeleteLookBack);
             var ArchiveCutOffTime = GetCutOffTime(ArchiveLookBack);
-            
+
             var files = new DirectoryInfo(FileDirectory).GetFiles("*.*");
             foreach (var file in files)
             {
@@ -39,8 +39,8 @@ namespace LogFileCleaner
                     {
                         file.Delete();
                     }
-                    else if (ArchiveCutOffTime != null && file.CreationTime < ArchiveCutOffTime)
-                    {                            
+                    else if (ArchiveCutOffTime != null && file.LastWriteTime < ArchiveCutOffTime)
+                    {
                         //Creating Folders in Archive with year and month
                         string folder_YearMonth = $"{file.LastWriteTime.Year}{file.LastWriteTime.Month:D2}";
                         var destdirectory = Path.Combine(ArchiveDirectory, folder_YearMonth);
@@ -49,25 +49,24 @@ namespace LogFileCleaner
                             Directory.CreateDirectory(destdirectory);
                         File.Move(file.FullName, desfilename);
                     }
-
                 }
                 catch (Exception)
                 {
 
-                    throw;
+                    return;
                 }
 
             }
 
         }
-        
+
         static public DateTime? GetCutOffTime(string deleteLookBack)
         {
             DateTime? result = null;
 
             Regex pattern = new Regex(@"(?<duration>\d+)(?<timeFrame>[DMWY])");
             Match match = pattern.Match(deleteLookBack);
-            if (match.Length == 2)
+            if (match.Groups.Count == 3)
             {
                 var duration = int.Parse(match.Groups["duration"].Value);
                 var timeFrame = match.Groups["timeFrame"].Value;
